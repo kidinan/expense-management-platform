@@ -1,0 +1,183 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Expenses</h1>
+      <p class="page-subtitle">Manage, search, filter, and track all your recorded expenses</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span>+</span> Add Expense
+    </button>
+  </div>
+
+  <!-- Filter & Search Card -->
+  <div class="card filter-card">
+    <div class="filter-grid">
+      <!-- Search -->
+      <div class="filter-item search-item">
+        <label class="filter-label">Search</label>
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="form-input search-input"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search by description..."
+          />
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="filter-item">
+        <label class="filter-label">Category</label>
+        <select class="form-input" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat.name">
+            {{ cat.icon }} {{ cat.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Start Date -->
+      <div class="filter-item">
+        <label class="filter-label">From Date</label>
+        <input
+          type="date"
+          class="form-input"
+          [(ngModel)]="startDate"
+          (change)="onFilterChange()"
+        />
+      </div>
+
+      <!-- End Date -->
+      <div class="filter-item">
+        <label class="filter-label">To Date</label>
+        <input
+          type="date"
+          class="form-input"
+          [(ngModel)]="endDate"
+          (change)="onFilterChange()"
+        />
+      </div>
+
+      <!-- Reset -->
+      <div class="filter-item filter-actions">
+        <button class="btn btn-secondary btn-sm" (click)="resetFilters()" title="Reset all filters">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Data Section -->
+  <div class="card list-card">
+    <div class="table-header-bar">
+      <h3 class="section-title">
+        Records <span class="badge-count">({{ expenses.length }})</span>
+      </h3>
+
+      <div class="sort-controls">
+        <span class="sort-label">Sort by:</span>
+        <button
+          class="sort-pill"
+          [class.active]="sortBy === 'date'"
+          (click)="toggleSort('date')">
+          Date {{ sortBy === 'date' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+        </button>
+        <button
+          class="sort-pill"
+          [class.active]="sortBy === 'amount'"
+          (click)="toggleSort('amount')">
+          Amount {{ sortBy === 'amount' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading expenses...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && expenses.length === 0" class="empty-state">
+      <div class="empty-icon">💸</div>
+      <h3>No expenses found</h3>
+      <p>Try clearing your search/filters or record your first expense.</p>
+      <button class="btn btn-primary btn-sm" (click)="openAddModal()" style="margin-top: 1rem;">
+        + Add First Expense
+      </button>
+    </div>
+
+    <!-- Table (Desktop & Tablet) -->
+    <div *ngIf="!isLoading && expenses.length > 0" class="table-responsive">
+      <table class="expense-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th class="text-right">Amount</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let exp of expenses" class="table-row">
+            <td class="date-col">{{ exp.date | date:'MMM dd, yyyy' }}</td>
+            <td class="desc-col font-medium">{{ exp.description }}</td>
+            <td>
+              <span
+                class="category-badge"
+                [style.backgroundColor]="getCategoryColor(exp.category) + '18'"
+                [style.color]="getCategoryColor(exp.category)">
+                <span>{{ getCategoryIcon(exp.category) }}</span>
+                <span>{{ exp.category }}</span>
+              </span>
+            </td>
+            <td class="text-right amount-col">
+              ${{ exp.amount | number:'1.2-2' }}
+            </td>
+            <td class="text-right actions-col">
+              <button class="action-btn edit-btn" (click)="openEditModal(exp)" title="Edit">
+                ✏️
+              </button>
+              <button class="action-btn delete-btn" (click)="confirmDelete(exp)" title="Delete">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<app-expense-modal
+  *ngIf="showExpenseModal"
+  [expenseToEdit]="selectedExpenseForEdit"
+  (saved)="onExpenseSaved()"
+  (closed)="showExpenseModal = false">
+</app-expense-modal>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="expenseToDelete" (click)="cancelDelete()">
+  <div class="modal-card confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-content">
+      <div class="warning-icon">⚠️</div>
+      <h3 class="modal-title">Delete Expense?</h3>
+      <p class="confirm-text">
+        Are you sure you want to delete "<strong>{{ expenseToDelete.description }}</strong>" for
+        <strong>${{ expenseToDelete.amount | number:'1.2-2' }}</strong>?
+        This action cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn btn-danger" (click)="executeDelete()" [disabled]="isDeleting">
+        {{ isDeleting ? 'Deleting...' : 'Yes, Delete' }}
+      </button>
+    </div>
+  </div>
+</div>

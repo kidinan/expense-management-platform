@@ -1,0 +1,49 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a routerLink="/dashboard" class="brand-logo">
+        <span class="logo-icon">💰</span>
+        <span class="logo-text">Expense<span class="logo-accent">Hub</span></span>
+      </a>
+      
+      <div class="nav-links" *ngIf="authService.isLoggedIn()">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          Dashboard
+        </a>
+        <a routerLink="/expenses" routerLinkActive="active" class="nav-item">
+          Expenses
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-actions" *ngIf="authService.isLoggedIn()">
+      <div class="user-profile-menu">
+        <button class="user-pill-btn" (click)="toggleUserMenu()">
+          <span class="avatar">{{ authService.currentUser()?.fullName?.charAt(0) || 'U' }}</span>
+          <span class="user-name">{{ authService.currentUser()?.fullName }}</span>
+          <span class="arrow-icon">▾</span>
+        </button>
+
+        <div class="dropdown-menu" *ngIf="showUserMenu" (mouseleave)="closeUserMenu()">
+          <div class="dropdown-header">
+            <p class="user-email">{{ authService.currentUser()?.email }}</p>
+            <p class="user-handle">&#64;{{ authService.currentUser()?.username }}</p>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" (click)="openPasswordModal()">
+            🔒 Change Password
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item text-danger" (click)="logout()">
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<app-change-password-modal
+  *ngIf="showPasswordModal"
+  (closed)="showPasswordModal = false">
+</app-change-password-modal>

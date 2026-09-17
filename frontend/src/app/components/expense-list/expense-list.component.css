@@ -1,0 +1,255 @@
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.filter-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 150px;
+}
+
+.search-item {
+  flex: 2;
+  min-width: 220px;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.search-input {
+  padding-left: 2.2rem;
+}
+
+.filter-actions {
+  flex: 0 0 auto;
+}
+
+.list-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.badge-count {
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.sort-pill {
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.sort-pill.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--border-focus);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.expense-table th {
+  background-color: #f8fafc;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.expense-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.table-row:hover {
+  background-color: #f8fafc;
+}
+
+.date-col {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.desc-col {
+  max-width: 300px;
+}
+
+.font-medium {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.amount-col {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.text-right {
+  text-align: right;
+}
+
+.actions-col {
+  white-space: nowrap;
+}
+
+.action-btn {
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.action-btn:hover {
+  background: #e2e8f0;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.confirm-modal {
+  padding: 1.5rem;
+}
+
+.confirm-content {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.warning-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .filter-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-item {
+    min-width: 100%;
+  }
+}

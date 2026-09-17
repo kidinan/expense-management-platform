@@ -1,0 +1,18 @@
+# Maven
+backend/target/
+backend/*.log
+
+# Node & Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/*.log
+.angular-config.json
+.npm/
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.swp
