@@ -52,12 +52,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 In-Memory (for testing / zero-config dev fallback) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 
         <!-- JWT Dependencies -->
         <dependency>
