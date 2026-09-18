@@ -19,15 +19,16 @@
 }
 
 .brand-emblem {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   margin: 0 auto 1rem;
-  background-color: var(--primary);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: #ffffff;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 
 .auth-title {
