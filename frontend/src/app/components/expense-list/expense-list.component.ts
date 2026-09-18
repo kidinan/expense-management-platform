@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Expense, EXPENSE_CATEGORIES, CategoryMeta } from '../../models/expense.model';
+import { Expense, EXPENSE_CATEGORIES, CategoryMeta, PagedExpenseResponse } from '../../models/expense.model';
 import { ExpenseService, ExpenseFilter } from '../../services/expense.service';
 import { ExpenseModalComponent } from '../expense-modal/expense-modal.component';
 
@@ -18,6 +18,14 @@ export class ExpenseListComponent implements OnInit {
   expenses: Expense[] = [];
   categories = EXPENSE_CATEGORIES;
   isLoading = false;
+
+  // Pagination State
+  currentPage = 0;
+  pageSize = 10;
+  totalElements = 0;
+  totalPages = 0;
+  isLast = true;
+  pageSizeOptions = [10, 25, 50];
 
   // Filters
   searchTerm = '';
@@ -45,12 +53,19 @@ export class ExpenseListComponent implements OnInit {
       startDate: this.startDate || undefined,
       endDate: this.endDate || undefined,
       sortBy: this.sortBy,
-      sortDirection: this.sortDirection
+      sortDirection: this.sortDirection,
+      page: this.currentPage,
+      size: this.pageSize
     };
 
     this.expenseService.getExpenses(filter).subscribe({
-      next: (data) => {
-        this.expenses = data;
+      next: (response: PagedExpenseResponse) => {
+        this.expenses = response.content;
+        this.currentPage = response.page;
+        this.pageSize = response.size;
+        this.totalElements = response.totalElements;
+        this.totalPages = response.totalPages;
+        this.isLast = response.last;
         this.isLoading = false;
       },
       error: (err) => {
@@ -61,10 +76,12 @@ export class ExpenseListComponent implements OnInit {
   }
 
   onSearchChange(): void {
+    this.currentPage = 0;
     this.loadExpenses();
   }
 
   onFilterChange(): void {
+    this.currentPage = 0;
     this.loadExpenses();
   }
 
@@ -75,6 +92,7 @@ export class ExpenseListComponent implements OnInit {
     this.endDate = '';
     this.sortBy = 'date';
     this.sortDirection = 'desc';
+    this.currentPage = 0;
     this.loadExpenses();
   }
 
@@ -89,7 +107,44 @@ export class ExpenseListComponent implements OnInit {
       this.sortBy = field;
       this.sortDirection = 'desc';
     }
+    this.currentPage = 0;
     this.loadExpenses();
+  }
+
+  // Pagination actions
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadExpenses();
+    }
+  }
+
+  nextPage(): void {
+    if (!this.isLast && this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadExpenses();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadExpenses();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadExpenses();
+  }
+
+  get startEntry(): number {
+    if (this.totalElements === 0) return 0;
+    return this.currentPage * this.pageSize + 1;
+  }
+
+  get endEntry(): number {
+    return Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
   }
 
   openAddModal(): void {
@@ -124,6 +179,10 @@ export class ExpenseListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.expenseToDelete = null;
+        // If we deleted the only item on the current page and it's not the first page, go back 1 page
+        if (this.expenses.length === 1 && this.currentPage > 0) {
+          this.currentPage--;
+        }
         this.loadExpenses();
       },
       error: (err) => {

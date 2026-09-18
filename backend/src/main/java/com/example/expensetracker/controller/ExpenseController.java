@@ -2,6 +2,7 @@ package com.example.expensetracker.controller;
 
 import com.example.expensetracker.dto.ExpenseRequest;
 import com.example.expensetracker.dto.ExpenseResponse;
+import com.example.expensetracker.dto.PagedExpenseResponse;
 import com.example.expensetracker.security.UserPrincipal;
 import com.example.expensetracker.service.ExpenseService;
 import jakarta.validation.Valid;
@@ -34,17 +35,27 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ExpenseResponse>> getExpenses(
+    public ResponseEntity<PagedExpenseResponse> getExpenses(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
-        List<ExpenseResponse> expenses = expenseService.getExpenses(
-                userPrincipal.getId(), category, search, startDate, endDate, sortBy, sortDirection);
-        return ResponseEntity.ok(expenses);
+        PagedExpenseResponse response = expenseService.getExpenses(
+                userPrincipal.getId(), category, search, startDate, endDate, page, size, sortBy, sortDirection);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<ExpenseResponse>> getRecentExpenses(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(defaultValue = "5") int limit) {
+        List<ExpenseResponse> recent = expenseService.getRecentExpenses(userPrincipal.getId(), limit);
+        return ResponseEntity.ok(recent);
     }
 
     @GetMapping("/{id}")

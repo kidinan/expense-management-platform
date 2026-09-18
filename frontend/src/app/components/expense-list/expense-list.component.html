@@ -90,8 +90,8 @@
   <div class="card table-panel">
     <div class="table-meta-bar">
       <div class="meta-left">
-        <span class="table-title">Entries</span>
-        <span class="counter-badge tabular-nums">{{ expenses.length }}</span>
+        <span class="table-title">Records</span>
+        <span class="counter-badge tabular-nums">{{ totalElements }}</span>
       </div>
 
       <div class="meta-right">
@@ -193,6 +193,45 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="!isLoading && totalElements > 0" class="pagination-footer">
+      <div class="pagination-info">
+        <span>Showing <strong class="tabular-nums">{{ startEntry }}</strong>–<strong class="tabular-nums">{{ endEntry }}</strong> of <strong class="tabular-nums">{{ totalElements }}</strong> entries</span>
+        <div class="size-picker">
+          <span class="size-label">Per page:</span>
+          <select class="size-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button
+          class="btn btn-secondary btn-sm pagination-btn"
+          [disabled]="currentPage === 0"
+          (click)="previousPage()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Previous</span>
+        </button>
+
+        <span class="page-indicator tabular-nums">
+          Page {{ currentPage + 1 }} of {{ totalPages }}
+        </span>
+
+        <button
+          class="btn btn-secondary btn-sm pagination-btn"
+          [disabled]="isLast || currentPage >= totalPages - 1"
+          (click)="nextPage()">
+          <span>Next</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </div>

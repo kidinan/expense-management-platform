@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Expense, ExpenseRequest } from '../models/expense.model';
+import { Expense, ExpenseRequest, PagedExpenseResponse } from '../models/expense.model';
 import { DashboardStats } from '../models/dashboard.model';
 
 export interface ExpenseFilter {
@@ -11,6 +11,8 @@ export interface ExpenseFilter {
   endDate?: string;
   sortBy?: string;
   sortDirection?: string;
+  page?: number;
+  size?: number;
 }
 
 @Injectable({
@@ -22,7 +24,7 @@ export class ExpenseService {
 
   constructor(private http: HttpClient) {}
 
-  getExpenses(filters?: ExpenseFilter): Observable<Expense[]> {
+  getExpenses(filters?: ExpenseFilter): Observable<PagedExpenseResponse> {
     let params = new HttpParams();
     if (filters) {
       if (filters.category) params = params.set('category', filters.category);
@@ -31,8 +33,15 @@ export class ExpenseService {
       if (filters.endDate) params = params.set('endDate', filters.endDate);
       if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
       if (filters.sortDirection) params = params.set('sortDirection', filters.sortDirection);
+      if (filters.page !== undefined) params = params.set('page', filters.page.toString());
+      if (filters.size !== undefined) params = params.set('size', filters.size.toString());
     }
-    return this.http.get<Expense[]>(this.apiUrl, { params });
+    return this.http.get<PagedExpenseResponse>(this.apiUrl, { params });
+  }
+
+  getRecentExpenses(limit: number = 6): Observable<Expense[]> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<Expense[]>(`${this.apiUrl}/recent`, { params });
   }
 
   getExpense(id: number): Observable<Expense> {

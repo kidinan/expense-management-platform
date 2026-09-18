@@ -139,7 +139,8 @@ Open `http://localhost:4200` in your browser.
 - `GET /api/auth/me` - Current user profile (authenticated)
 
 ### Expenses (`/api/expenses`)
-- `GET /api/expenses` - List user expenses (supports `category`, `search`, `startDate`, `endDate`, `sortBy`, `sortDirection`)
+- `GET /api/expenses` - Paginated user expenses (supports `page`, `size`, `category`, `search`, `startDate`, `endDate`, `sortBy`, `sortDirection`)
+- `GET /api/expenses/recent?limit=6` - Quick list of latest expenses for dashboard preview
 - `POST /api/expenses` - Create a new expense
 - `GET /api/expenses/{id}` - View an expense (user-owned only)
 - `PUT /api/expenses/{id}` - Update an expense (user-owned only)

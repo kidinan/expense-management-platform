@@ -2,11 +2,15 @@ package com.example.expensetracker.service;
 
 import com.example.expensetracker.dto.ExpenseRequest;
 import com.example.expensetracker.dto.ExpenseResponse;
+import com.example.expensetracker.dto.PagedExpenseResponse;
 import com.example.expensetracker.entity.Expense;
 import com.example.expensetracker.entity.User;
 import com.example.expensetracker.exception.ResourceNotFoundException;
 import com.example.expensetracker.repository.ExpenseRepository;
 import com.example.expensetracker.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,36 +48,57 @@ public class ExpenseService {
     }
 
     @Transactional(readOnly = true)
-    public List<ExpenseResponse> getExpenses(Long userId,
+    public PagedExpenseResponse getExpenses(Long userId,
                                             String category,
                                             String search,
                                             LocalDate startDate,
                                             LocalDate endDate,
+                                            int page,
+                                            int size,
                                             String sortBy,
                                             String sortDirection) {
-        // Sort direction and field
         Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
         String sortProperty = "amount".equalsIgnoreCase(sortBy) ? "amount" : "date";
-        Sort sort = Sort.by(direction, sortProperty);
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(direction, sortProperty));
 
-        List<Expense> expenses;
+        Page<Expense> expensePage;
         boolean hasFilters = (category != null && !category.isBlank()) ||
                              (search != null && !search.isBlank()) ||
                              startDate != null ||
                              endDate != null;
 
         if (hasFilters) {
-            expenses = expenseRepository.findWithFilters(userId, category, search, startDate, endDate, sort);
+            expensePage = expenseRepository.findWithFilters(userId, category, search, startDate, endDate, pageable);
         } else {
-            expenses = expenseRepository.findAllByUserId(userId, sort);
+            expensePage = expenseRepository.findAllByUserId(userId, pageable);
         }
 
-        return expenses.stream().map(this::mapToResponse).collect(Collectors.toList());
+        List<ExpenseResponse> content = expensePage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new PagedExpenseResponse(
+                content,
+                expensePage.getNumber(),
+                expensePage.getSize(),
+                expensePage.getTotalElements(),
+                expensePage.getTotalPages(),
+                expensePage.isLast()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExpenseResponse> getRecentExpenses(Long userId, int limit) {
+        Pageable pageable = PageRequest.of(0, Math.max(1, limit), Sort.by(Sort.Direction.DESC, "date"));
+        return expenseRepository.findAllByUserId(userId, pageable)
+                .getContent()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public ExpenseResponse getExpenseById(Long userId, Long expenseId) {
-        // Strict server-side authorization: user can only access their own expense
         Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found or access denied for ID: " + expenseId));
 
@@ -82,7 +107,6 @@ public class ExpenseService {
 
     @Transactional
     public ExpenseResponse updateExpense(Long userId, Long expenseId, ExpenseRequest request) {
-        // Strict server-side authorization: user can only edit their own expense
         Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found or access denied for ID: " + expenseId));
 
@@ -97,7 +121,6 @@ public class ExpenseService {
 
     @Transactional
     public void deleteExpense(Long userId, Long expenseId) {
-        // Strict server-side authorization: user can only delete their own expense
         Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found or access denied for ID: " + expenseId));
 

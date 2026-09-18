@@ -14,6 +14,15 @@ export interface ExpenseRequest {
   category: string;
 }
 
+export interface PagedExpenseResponse {
+  content: Expense[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+}
+
 export interface CategoryMeta {
   name: string;
   color: string;

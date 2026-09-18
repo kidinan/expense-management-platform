@@ -38,9 +38,9 @@ export class DashboardComponent implements OnInit {
       error: (err) => console.error('Failed to load stats', err)
     });
 
-    this.expenseService.getExpenses({ sortBy: 'date', sortDirection: 'desc' }).subscribe({
+    this.expenseService.getRecentExpenses(6).subscribe({
       next: (expenses) => {
-        this.recentExpenses = expenses.slice(0, 6);
+        this.recentExpenses = expenses;
         this.isLoading = false;
       },
       error: (err) => {

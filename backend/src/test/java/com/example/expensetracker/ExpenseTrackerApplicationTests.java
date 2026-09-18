@@ -17,6 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -104,5 +108,25 @@ class ExpenseTrackerApplicationTests {
         assertThrows(ResourceNotFoundException.class, () -> {
             expenseService.deleteExpense(userBId, 100L);
         });
+    }
+
+    @Test
+    void testPaginatedExpenses() {
+        Long userId = 1L;
+        User user = new User("alice", "alice@example.com", "pass", "Alice");
+        user.setId(userId);
+
+        Expense exp1 = new Expense(new BigDecimal("25.00"), LocalDate.now(), "Coffee", "Food", user);
+        exp1.setId(1L);
+
+        Page<Expense> mockPage = new PageImpl<>(List.of(exp1), PageRequest.of(0, 10), 1);
+        when(expenseRepository.findAllByUserId(eq(userId), any(Pageable.class))).thenReturn(mockPage);
+
+        var result = expenseService.getExpenses(userId, null, null, null, null, 0, 10, "date", "desc");
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPage());
     }
 }
