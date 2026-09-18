@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ExpenseService } from '../../services/expense.service';
 import { AuthService } from '../../services/auth.service';
 import { DashboardStats } from '../../models/dashboard.model';
-import { Expense, EXPENSE_CATEGORIES } from '../../models/expense.model';
+import { Expense, EXPENSE_CATEGORIES, CategoryMeta } from '../../models/expense.model';
 import { ExpenseModalComponent } from '../expense-modal/expense-modal.component';
 
 @Component({
@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
 
     this.expenseService.getExpenses({ sortBy: 'date', sortDirection: 'desc' }).subscribe({
       next: (expenses) => {
-        this.recentExpenses = expenses.slice(0, 5);
+        this.recentExpenses = expenses.slice(0, 6);
         this.isLoading = false;
       },
       error: (err) => {
@@ -59,19 +59,19 @@ export class DashboardComponent implements OnInit {
     this.loadDashboardData();
   }
 
-  getCategoryColor(categoryName: string): string {
+  getCategoryMeta(categoryName: string): CategoryMeta {
     const found = this.categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-    return found ? found.color : '#6b7280';
-  }
-
-  getCategoryIcon(categoryName: string): string {
-    const found = this.categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-    return found ? found.icon : '🏷️';
+    return found || { name: categoryName, color: '#64748b', bgColor: '#f8fafc', textColor: '#334155' };
   }
 
   getMaxMonthlyAmount(): number {
     if (!this.stats || !this.stats.monthlyTrend.length) return 1;
     const max = Math.max(...this.stats.monthlyTrend.map(m => m.amount));
     return max > 0 ? max : 1;
+  }
+
+  get averageExpense(): number {
+    if (!this.stats || !this.stats.expenseCount || this.stats.expenseCount === 0) return 0;
+    return this.stats.totalExpenses / this.stats.expenseCount;
   }
 }

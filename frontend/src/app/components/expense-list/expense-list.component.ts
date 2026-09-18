@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Expense, EXPENSE_CATEGORIES } from '../../models/expense.model';
+import { Expense, EXPENSE_CATEGORIES, CategoryMeta } from '../../models/expense.model';
 import { ExpenseService, ExpenseFilter } from '../../services/expense.service';
 import { ExpenseModalComponent } from '../expense-modal/expense-modal.component';
 
@@ -78,6 +78,10 @@ export class ExpenseListComponent implements OnInit {
     this.loadExpenses();
   }
 
+  get hasActiveFilters(): boolean {
+    return !!(this.searchTerm || this.selectedCategory || this.startDate || this.endDate);
+  }
+
   toggleSort(field: string): void {
     if (this.sortBy === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -129,13 +133,8 @@ export class ExpenseListComponent implements OnInit {
     });
   }
 
-  getCategoryColor(categoryName: string): string {
+  getCategoryMeta(categoryName: string): CategoryMeta {
     const found = this.categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-    return found ? found.color : '#6b7280';
-  }
-
-  getCategoryIcon(categoryName: string): string {
-    const found = this.categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-    return found ? found.icon : '🏷️';
+    return found || { name: categoryName, color: '#64748b', bgColor: '#f8fafc', textColor: '#334155' };
   }
 }

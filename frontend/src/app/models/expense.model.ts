@@ -14,13 +14,20 @@ export interface ExpenseRequest {
   category: string;
 }
 
-export const EXPENSE_CATEGORIES = [
-  { name: 'Food', color: '#10b981', icon: '🍔' },
-  { name: 'Travel', color: '#3b82f6', icon: '✈️' },
-  { name: 'Bills', color: '#ef4444', icon: '📄' },
-  { name: 'Shopping', color: '#8b5cf6', icon: '🛍️' },
-  { name: 'Entertainment', color: '#f59e0b', icon: '🎬' },
-  { name: 'Healthcare', color: '#ec4899', icon: '💊' },
-  { name: 'Education', color: '#06b6d4', icon: '📚' },
-  { name: 'Other', color: '#6b7280', icon: '🏷️' }
+export interface CategoryMeta {
+  name: string;
+  color: string;
+  bgColor: string;
+  textColor: string;
+}
+
+export const EXPENSE_CATEGORIES: CategoryMeta[] = [
+  { name: 'Food', color: '#059669', bgColor: '#ecfdf5', textColor: '#065f46' },
+  { name: 'Travel', color: '#0284c7', bgColor: '#f0f9ff', textColor: '#075985' },
+  { name: 'Bills', color: '#dc2626', bgColor: '#fef2f2', textColor: '#991b1b' },
+  { name: 'Shopping', color: '#7c3aed', bgColor: '#f5f3ff', textColor: '#5b21b6' },
+  { name: 'Entertainment', color: '#d97706', bgColor: '#fffbeb', textColor: '#92400e' },
+  { name: 'Healthcare', color: '#db2777', bgColor: '#fdf2f8', textColor: '#9d174d' },
+  { name: 'Education', color: '#0d9488', bgColor: '#f0fdfa', textColor: '#115e59' },
+  { name: 'Other', color: '#64748b', bgColor: '#f8fafc', textColor: '#334155' }
 ];

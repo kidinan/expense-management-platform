@@ -1,24 +1,37 @@
 <div class="modal-backdrop" (click)="close()">
   <div class="modal-card" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3 class="modal-title">{{ expenseToEdit ? 'Edit Expense' : 'Add New Expense' }}</h3>
-      <button class="close-btn" (click)="close()">&times;</button>
+      <div>
+        <h3 class="modal-title">{{ expenseToEdit ? 'Edit Expense' : 'Add Expense' }}</h3>
+        <p class="modal-desc">{{ expenseToEdit ? 'Update details for this record' : 'Create a new expense transaction' }}</p>
+      </div>
+      <button class="close-icon-btn" (click)="close()" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
 
     <form (ngSubmit)="onSubmit()" class="modal-body">
       <div *ngIf="errorMessage" class="alert-banner alert-error">
-        {{ errorMessage }}
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage }}</span>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Amount ($)</label>
-        <div class="input-prefix-wrapper">
-          <span class="currency-symbol">$</span>
+        <label class="form-label">Amount</label>
+        <div class="amount-field-wrap">
+          <span class="currency-prefix">$</span>
           <input
             type="number"
             step="0.01"
             min="0.01"
-            class="form-input with-prefix"
+            class="form-input amount-input tabular-nums"
             [(ngModel)]="amount"
             name="amount"
             placeholder="0.00"
@@ -35,7 +48,7 @@
           class="form-input"
           [(ngModel)]="description"
           name="description"
-          placeholder="e.g. Weekly grocery run"
+          placeholder="e.g. Office supplies or Coffee"
           required
         />
       </div>
@@ -45,7 +58,7 @@
           <label class="form-label">Category</label>
           <select class="form-input" [(ngModel)]="category" name="category" required>
             <option *ngFor="let cat of categories" [value]="cat.name">
-              {{ cat.icon }} {{ cat.name }}
+              {{ cat.name }}
             </option>
           </select>
         </div>
@@ -63,9 +76,9 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="close()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Saving...' : (expenseToEdit ? 'Update Expense' : 'Save Expense') }}
+        <button type="button" class="btn btn-secondary btn-sm" (click)="close()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : (expenseToEdit ? 'Save Changes' : 'Create Expense') }}
         </button>
       </div>
     </form>
