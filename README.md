@@ -1,8 +1,8 @@
 # Multi-User Expense Management Platform
 
-A clean, modern, and simple full-stack Expense Management Platform built with **Angular 19 (TypeScript)**, **Spring Boot 3 (Java 21)**, and **PostgreSQL**.
+A modern, full-stack Expense Management Platform built with **Angular 19 (TypeScript)**, **Spring Boot 3 (Java 21)**, and **PostgreSQL**.
 
-Designed with **clean code simplicity** (easy to understand and explain in a technical interview) and a **responsive, modern UI**.
+Featuring multi-user support with JWT authentication, role-isolated data boundaries, comprehensive expense tracking, visual dashboard metrics, search, filtering, and server-side pagination.
 
 ---
 
@@ -151,26 +151,10 @@ Open `http://localhost:4200` in your browser.
 
 ---
 
-## 💡 Code Interview Talking Points
+## 🛡️ Security & Architecture Highlights
 
-- **Multi-user Data Isolation**: In `ExpenseRepository`, queries filter strictly by `user.id = :userId`, which is extracted from the authenticated JWT principal on the server. No user can view or modify another user's records.
-- **Stateless JWT Flow**: Spring Security's `JwtAuthenticationFilter` checks every incoming request's `Authorization` header, validates the signature, and loads the user into `SecurityContextHolder`.
-- **Angular Architecture**: Angular 19 Standalone Components, functional `authGuard` for routing protection, and `authInterceptor` for automatic JWT Bearer token attachment and handling `401 Unauthorized`.
-- **Server-Side Validation**: Jakarta Validation (`@NotBlank`, `@Positive`, `@Email`, `@Size`) with standardized JSON errors via `@RestControllerAdvice`.
+- **Multi-Tenant Data Isolation**: In `ExpenseRepository`, all operations are strictly constrained by `user.id = :userId` extracted from the server-side JWT principal.
+- **Stateless Authentication**: Spring Security operates under `SessionCreationPolicy.STATELESS` with incoming requests validated through `JwtAuthenticationFilter`.
+- **Jakarta Validation**: Server-side request payloads enforce strict constraints (`@NotBlank`, `@Positive`, `@Email`, `@Size`) with unified JSON errors returned by `@RestControllerAdvice`.
+- **Modern Angular Architecture**: Built using Angular 19 Standalone Components, Signals for local reactive state, and functional HTTP interceptors for automatic Bearer token injection.
 
----
-
-## 📤 Sharing on GitHub
-
-To push this repository to GitHub and share with **yirgu15@gmail.com**:
-
-```bash
-git remote add origin https://github.com/<your-username>/expense-management-platform.git
-git branch -M main
-git push -u origin main
-```
-
-In GitHub:
-1. Navigate to your repository.
-2. Go to **Settings** &rarr; **Collaborators** &rarr; **Add people**.
-3. Enter **`yirgu15@gmail.com`** and send the invite.
