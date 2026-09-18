@@ -5,9 +5,13 @@ import com.example.expensetracker.dto.ExpenseResponse;
 import com.example.expensetracker.dto.PagedExpenseResponse;
 import com.example.expensetracker.security.UserPrincipal;
 import com.example.expensetracker.service.ExpenseService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/expenses")
+@Tag(name = "Expenses", description = "Endpoints for managing personal expenses with server-side isolation")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -27,6 +32,7 @@ public class ExpenseController {
     }
 
     @PostMapping
+    @Operation(summary = "Create an expense", description = "Creates a new expense record bound to the authenticated user")
     public ResponseEntity<ExpenseResponse> createExpense(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody ExpenseRequest request) {
@@ -35,6 +41,7 @@ public class ExpenseController {
     }
 
     @GetMapping
+    @Operation(summary = "List expenses (paginated)", description = "Retrieves a paginated list of expenses with optional filtering and sorting")
     public ResponseEntity<PagedExpenseResponse> getExpenses(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(required = false) String category,
@@ -50,7 +57,29 @@ public class ExpenseController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/export")
+    @Operation(summary = "Export expenses to CSV", description = "Streams a downloadable CSV file containing expenses matching current filters")
+    public ResponseEntity<byte[]> exportExpenses(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+        byte[] csvData = expenseService.exportExpensesToCsv(
+                userPrincipal.getId(), category, search, startDate, endDate, sortBy, sortDirection);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+        headers.setContentDispositionFormData("attachment", "expenses.csv");
+        headers.setContentLength(csvData.length);
+
+        return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
+    }
+
     @GetMapping("/recent")
+    @Operation(summary = "Recent expenses preview", description = "Retrieves the latest expenses for dashboard preview")
     public ResponseEntity<List<ExpenseResponse>> getRecentExpenses(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(defaultValue = "5") int limit) {

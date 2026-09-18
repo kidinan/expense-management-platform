@@ -42,6 +42,19 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+    @Query(value = "SELECT e FROM Expense e WHERE e.user.id = :userId " +
+           "AND (:category IS NULL OR :category = '' OR LOWER(e.category) = LOWER(:category)) " +
+           "AND (:search IS NULL OR :search = '' OR LOWER(e.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (CAST(:startDate AS java.time.LocalDate) IS NULL OR e.date >= :startDate) " +
+           "AND (CAST(:endDate AS java.time.LocalDate) IS NULL OR e.date <= :endDate)")
+    List<Expense> findWithFiltersList(
+            @Param("userId") Long userId,
+            @Param("category") String category,
+            @Param("search") String search,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Sort sort
+    );
 
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.user.id = :userId")
     BigDecimal sumTotalByUserId(@Param("userId") Long userId);

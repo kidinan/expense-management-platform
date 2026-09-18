@@ -60,6 +60,29 @@ export class ExpenseService {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
   }
 
+  exportCsv(filters?: {
+    category?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    sortBy?: string;
+    sortDirection?: string;
+  }): Observable<Blob> {
+    let params = new HttpParams();
+    if (filters) {
+      if (filters.category) params = params.set('category', filters.category);
+      if (filters.search) params = params.set('search', filters.search);
+      if (filters.startDate) params = params.set('startDate', filters.startDate);
+      if (filters.endDate) params = params.set('endDate', filters.endDate);
+      if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
+      if (filters.sortDirection) params = params.set('sortDirection', filters.sortDirection);
+    }
+    return this.http.get(`${this.apiUrl}/export`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   getDashboardStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.dashboardUrl}/stats`);
   }

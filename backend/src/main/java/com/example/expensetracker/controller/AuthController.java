@@ -6,6 +6,7 @@ import com.example.expensetracker.dto.ChangePasswordRequest;
 import com.example.expensetracker.dto.RegisterRequest;
 import com.example.expensetracker.security.UserPrincipal;
 import com.example.expensetracker.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Endpoints for user registration, login, profile, and password management")
 public class AuthController {
 
     private final AuthService authService;

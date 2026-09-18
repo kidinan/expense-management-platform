@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +86,49 @@ public class ExpenseService {
                 expensePage.getTotalPages(),
                 expensePage.isLast()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] exportExpensesToCsv(Long userId,
+                                      String category,
+                                      String search,
+                                      LocalDate startDate,
+                                      LocalDate endDate,
+                                      String sortBy,
+                                      String sortDirection) {
+        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        String property = "amount".equalsIgnoreCase(sortBy) ? "amount" : "date";
+        Sort sort = Sort.by(direction, property).and(Sort.by(Sort.Direction.DESC, "id"));
+
+        List<Expense> expenses = expenseRepository.findWithFiltersList(
+                userId,
+                (category != null && !category.trim().isEmpty()) ? category.trim() : null,
+                (search != null && !search.trim().isEmpty()) ? search.trim() : null,
+                startDate,
+                endDate,
+                sort
+        );
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID,Date,Category,Description,Amount\n");
+
+        for (Expense exp : expenses) {
+            sb.append(exp.getId()).append(",")
+              .append(exp.getDate()).append(",")
+              .append(escapeCsv(exp.getCategory())).append(",")
+              .append(escapeCsv(exp.getDescription())).append(",")
+              .append(exp.getAmount()).append("\n");
+        }
+
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "\"\"";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return "\"" + value + "\"";
     }
 
     @Transactional(readOnly = true)

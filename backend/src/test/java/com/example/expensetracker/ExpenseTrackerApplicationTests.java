@@ -129,4 +129,24 @@ class ExpenseTrackerApplicationTests {
         assertEquals(1, result.getTotalPages());
         assertEquals(0, result.getPage());
     }
+
+    @Test
+    void testExportExpensesToCsv() {
+        Long userId = 1L;
+        User user = new User("alice", "alice@example.com", "pass", "Alice");
+        user.setId(userId);
+
+        Expense exp = new Expense(new BigDecimal("99.50"), LocalDate.of(2026, 9, 15), "Office Supplies", "Shopping", user);
+        exp.setId(10L);
+
+        when(expenseRepository.findWithFiltersList(eq(userId), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(exp));
+
+        byte[] csvBytes = expenseService.exportExpensesToCsv(userId, null, null, null, null, "date", "desc");
+        String csvContent = new String(csvBytes);
+
+        assertTrue(csvContent.contains("ID,Date,Category,Description,Amount"));
+        assertTrue(csvContent.contains("Office Supplies"));
+        assertTrue(csvContent.contains("99.50"));
+    }
 }

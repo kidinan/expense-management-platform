@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Expense, EXPENSE_CATEGORIES, CategoryMeta, PagedExpenseResponse } from '../../models/expense.model';
 import { ExpenseService, ExpenseFilter } from '../../services/expense.service';
+import { ToastService } from '../../services/toast.service';
 import { ExpenseModalComponent } from '../expense-modal/expense-modal.component';
 
 @Component({
@@ -12,8 +15,12 @@ import { ExpenseModalComponent } from '../expense-modal/expense-modal.component'
   templateUrl: './expense-list.component.html',
   styleUrls: ['./expense-list.component.css']
 })
-export class ExpenseListComponent implements OnInit {
+export class ExpenseListComponent implements OnInit, OnDestroy {
   private expenseService = inject(ExpenseService);
+  private toastService = inject(ToastService);
+
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
 
   expenses: Expense[] = [];
   categories = EXPENSE_CATEGORIES;
@@ -40,9 +47,54 @@ export class ExpenseListComponent implements OnInit {
   selectedExpenseForEdit: Expense | null = null;
   expenseToDelete: Expense | null = null;
   isDeleting = false;
+  isExporting = false;
 
   ngOnInit(): void {
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.searchTerm = term;
+      this.currentPage = 0;
+      this.loadExpenses();
+    });
+
     this.loadExpenses();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  exportToCsv(): void {
+    this.isExporting = true;
+    this.expenseService.exportCsv({
+      category: this.selectedCategory || undefined,
+      search: this.searchTerm || undefined,
+      startDate: this.startDate || undefined,
+      endDate: this.endDate || undefined,
+      sortBy: this.sortBy,
+      sortDirection: this.sortDirection
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `expenses-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.isExporting = false;
+        this.toastService.success('Expenses exported to CSV successfully');
+      },
+      error: () => {
+        this.isExporting = false;
+        this.toastService.error('Failed to export expenses');
+      }
+    });
   }
 
   loadExpenses(): void {
@@ -76,8 +128,7 @@ export class ExpenseListComponent implements OnInit {
   }
 
   onSearchChange(): void {
-    this.currentPage = 0;
-    this.loadExpenses();
+    this.searchSubject.next(this.searchTerm);
   }
 
   onFilterChange(): void {
@@ -87,6 +138,7 @@ export class ExpenseListComponent implements OnInit {
 
   resetFilters(): void {
     this.searchTerm = '';
+    this.searchSubject.next('');
     this.selectedCategory = '';
     this.startDate = '';
     this.endDate = '';
@@ -158,9 +210,11 @@ export class ExpenseListComponent implements OnInit {
   }
 
   onExpenseSaved(): void {
+    const isEdit = !!this.selectedExpenseForEdit;
     this.showExpenseModal = false;
     this.selectedExpenseForEdit = null;
     this.loadExpenses();
+    this.toastService.success(isEdit ? 'Expense updated successfully' : 'Expense created successfully');
   }
 
   confirmDelete(expense: Expense): void {
@@ -184,10 +238,11 @@ export class ExpenseListComponent implements OnInit {
           this.currentPage--;
         }
         this.loadExpenses();
+        this.toastService.success('Expense deleted successfully');
       },
       error: (err) => {
         this.isDeleting = false;
-        alert(err.error?.message || 'Failed to delete expense.');
+        this.toastService.error(err.error?.message || 'Failed to delete expense.');
       }
     });
   }
